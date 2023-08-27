@@ -22,6 +22,7 @@ def propagate(k,graph,vector_origin,M,N,KsampleNum):
     vector = np.zeros((M + N, N))
     for user in user_list:
         for j in range(KsampleNum):
+            print("Training:Epoch",k,",(user,j):(",user,",",j,")")
             targetNode,radio = randomwalk(k, graph, user)
             vector[targetNode] += radio*vector_origin[user]*0.001
     return vector
@@ -51,13 +52,12 @@ def topK(vector_origin,vector_propagate,M,N,k):
 
 def evaluate(recommendList, test):
     count = 0
+    print("Evaluating...")
     for tuple_item in recommendList:
         user = tuple_item[0]
         item = tuple_item[1]
         # testnp = numpy_array = np.array(test)
-        print(test[user])
         for test_item in test[user]:
-            print(test_item,type(test_item),item,type(item))
             if (test_item == item):
                 count += 1
                 break

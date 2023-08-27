@@ -10,7 +10,7 @@ from scipy.sparse import csr_matrix
 
 
 if world.dataset in ['gowalla', 'yelp2018', 'amazon-book']:
-    dataset = dataloader.Loader(path="./data")
+    dataset = dataloader.Loader(path="./data/"+world.dataset)
 elif world.dataset == 'lastfm':
     dataset = dataloader.Loader(path="./data")
 
@@ -45,36 +45,48 @@ graph = graph.tocsr()
 
 # M:user number; N: item number
 # vector_origin: M*N;  vector_propagate: (M+N)*N
+index = world.seed
 M = dataset.n_users
 N = dataset.m_items
-vector_propagate = [np.zeros(N) for _ in range(M + N)]
-K = int(world.topks)
+K_value = eval(world.topks)
+K = K_value[0]
+vector_propagate = [np.zeros((M + N, N)) for _ in range(K)]
+vector_propagate_sum = np.zeros((M + N, N))  # 创建用于存储总和的矩阵
 
 for i in range(1,K+1):
-    sampleNum = Klayer_sampleNum(i,0.025, 0.5, M)
-    vector_propagate = propagate(i,graph,vector_origin,vector_propagate,M,N,sampleNum)
+    sampleNum = Klayer_sampleNum(i,0.025, 0.5, M,index)
+    vector_propagate[i] = propagate(i,graph,vector_origin,M,N,sampleNum)
+    filename = f"matrix_{i}.npy"  # 文件名类似于 matrix_0.npy, matrix_1.npy, ...
+    np.save(filename, vector_propagate[i])
+    vector_propagate_sum += vector_propagate[i]
+    recommendList, recommend_vector = topK(vector_origin, vector_propagate_sum, M, N, 20)
+    count = evaluate(recommendList, dataset.test)
+    recall = count / dataset.testDataSize
+    print("epoch:",i," recall:", recall)
 
-recommendList,recommend_vector = topK(vector_origin,vector_propagate,M,N,20)
+filename = f"matrix_sum.npy"  # 文件名类似于 matrix_0.npy, matrix_1.npy, ...
+np.save(filename, vector_propagate_sum)
+
+recommendList,recommend_vector = topK(vector_origin,vector_propagate_sum,M,N,20)
 sp.save_npz(dataset.path + '/recommend_vector.npz', recommend_vector)
 count = evaluate(recommendList , dataset.test)
 recall = count / dataset.testDataSize
-print ("recall:",recall)
+print ("Final recall:",recall)
 # dense_array = dataset.UserItemNet.toarray()
 
 # 将原始 stdout 保存到变量
 original_stdout = sys.stdout
 
 # 打开一个文件来替代 stdout
-with open('output.txt', 'w') as f:
+with open('recall_output.txt', 'w') as f:
     # 重定向 stdout 到文件
     sys.stdout = f
-
+    print("Final recall:", recall)
     # 现在所有的 print 输出都会写入到文件中
-    with np.printoptions(threshold=np.inf):
-        print("0:",vector_array[0])
-        print("1:",vector_array[1])
-    print("users:",dataset.n_users)
-    print("items:",dataset.m_items)
-
+    # with np.printoptions(threshold=np.inf):
+    #     print("0:",vector_array[0])
+    #     print("1:",vector_array[1])
+    # print("users:",dataset.n_users)
+    # print("items:",dataset.m_items)
 # 恢复原始的 stdout
 sys.stdout = original_stdout

@@ -17,18 +17,18 @@ def randomwalk(length,graph,start_node):
     radio = 1/length
     return current_node,radio
 
-def propagate(k,graph,vector_origin,vector_propagate,M,N,KsampleNum):
+def propagate(k,graph,vector_origin,M,N,KsampleNum):
     user_list = [i for i in range(M)]
-    vector = vector_propagate
+    vector = np.zeros((M + N, N))
     for user in user_list:
         for j in range(KsampleNum):
             targetNode,radio = randomwalk(k, graph, user)
-            vector[targetNode] += radio*vector_origin[user]
+            vector[targetNode] += radio*vector_origin[user]*0.001
     return vector
 
-def Klayer_sampleNum(k,epsilon,delta,M):
+def Klayer_sampleNum(k,epsilon,delta,M,index):
     # return N: sample number for k
-    N = 1/(2*epsilon*epsilon)*math.log(2*M/delta)*math.pow(M,k*k)
+    N = 1/(2*epsilon*epsilon)*math.log(2*M/delta)*M*math.pow(k,index)
     return int(N)+1
 
 def topK(vector_origin,vector_propagate,M,N,k):

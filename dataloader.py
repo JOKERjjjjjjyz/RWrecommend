@@ -66,7 +66,7 @@ class Loader(BasicDataset):
     gowalla dataset
     """
 
-    def __init__(self, config=world.config, path="../data"):
+    def __init__(self, config=world.config, path="./data"):
         # train or test
         cprint(f'loading [{path}]')
         self.split = config['A_split']
@@ -206,6 +206,7 @@ class Loader(BasicDataset):
                 # norm_adj = norm_adj.dot(d_mat)
                 # norm_adj = norm_adj.tocsr()
                 end = time()
+                print(type(self.Graph))
         return self.Graph
                 # print(f"costing {end - s}s, saved norm_mat...")
             # if self.split == True:

@@ -54,8 +54,13 @@ def evaluate(recommendList, test):
     for tuple_item in recommendList:
         user = tuple_item[0]
         item = tuple_item[1]
-        if (test[user][item] != 0):
-            count += 1
+        # testnp = numpy_array = np.array(test)
+        print(test[user])
+        for test_item in test[user]:
+            print(test_item,type(test_item),item,type(item))
+            if (test_item == item):
+                count += 1
+                break
     return count
 
 # def main(graph,vector_origin)

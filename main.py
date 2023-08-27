@@ -52,15 +52,18 @@ K_value = eval(world.topks)
 K = K_value[0]
 vector_propagate = [np.zeros((M + N, N)) for _ in range(K)]
 vector_propagate_sum = np.zeros((M + N, N))  # 创建用于存储总和的矩阵
+testarray = [[] for _ in range(M)]
+for idx, user in enumerate(dataset.test):
+    testarray[idx] = dataset.test[user]
 
 for i in range(1,K+1):
     sampleNum = Klayer_sampleNum(i,0.025, 0.5, M,index)
-    vector_propagate[i] = propagate(i,graph,vector_origin,M,N,sampleNum)
-    filename = f"matrix_{i}.npy"  # 文件名类似于 matrix_0.npy, matrix_1.npy, ...
-    np.save(filename, vector_propagate[i])
-    vector_propagate_sum += vector_propagate[i]
+    vector_propagate[i-1] = propagate(i,graph,vector_origin,M,N,sampleNum)
+    filename = f"{world.dataset}_matrix_{i-1}.npy"  # 文件名类似于 matrix_0.npy, matrix_1.npy, ...
+    np.save(filename, vector_propagate[i-1])
+    vector_propagate_sum += vector_propagate[i-1]
     recommendList, recommend_vector = topK(vector_origin, vector_propagate_sum, M, N, 20)
-    count = evaluate(recommendList, dataset.test)
+    count = evaluate(recommendList, testarray)
     recall = count / dataset.testDataSize
     print("epoch:",i," recall:", recall)
 
@@ -68,8 +71,9 @@ filename = f"matrix_sum.npy"  # 文件名类似于 matrix_0.npy, matrix_1.npy, .
 np.save(filename, vector_propagate_sum)
 
 recommendList,recommend_vector = topK(vector_origin,vector_propagate_sum,M,N,20)
-sp.save_npz(dataset.path + '/recommend_vector.npz', recommend_vector)
-count = evaluate(recommendList , dataset.test)
+recommend_vector_csr = csr_matrix(recommend_vector)
+sp.save_npz(dataset.path + '/recommend_vector.npz', recommend_vector_csr)
+count = evaluate(recommendList , testarray)
 recall = count / dataset.testDataSize
 print ("Final recall:",recall)
 # dense_array = dataset.UserItemNet.toarray()

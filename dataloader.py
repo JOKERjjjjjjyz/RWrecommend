@@ -179,9 +179,10 @@ class Loader(BasicDataset):
         print("loading adjacency matrix")
         if self.Graph is None:
             try:
-                pre_adj_mat = sp.load_npz(self.path + '/s_pre_adj_mat.npz')
+                pre_adj_mat = sp.load_npz(self.path + '/adj_mat.npz')
                 print("successfully loaded...")
-                norm_adj = pre_adj_mat
+                adj_mat = pre_adj_mat
+                self.Graph = adj_mat
             except:
                 print("generating adjacency matrix")
                 s = time()

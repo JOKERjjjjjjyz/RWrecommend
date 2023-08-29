@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-
+import time
 def randomwalk(length,graph,start_node):
     current_node = start_node
     for step in range(length):
@@ -21,10 +21,14 @@ def propagate(k,graph,vector_origin,M,N,KsampleNum):
     user_list = [i for i in range(M)]
     vector = np.zeros((M + N, N))
     for user in user_list:
+        start_time=time.time()
         for j in range(KsampleNum):
             print("Training:Epoch",k,",(user,j):(",user,",",j,")")
             targetNode,radio = randomwalk(k, graph, user)
             vector[targetNode] += radio*vector_origin[user]*0.001
+        end_time = time.time()
+        use_time = end_time - start_time
+        print("user",user,"'s time:",use_time,"s")
     return vector
 
 def Klayer_sampleNum(k,epsilon,delta,M,index):
